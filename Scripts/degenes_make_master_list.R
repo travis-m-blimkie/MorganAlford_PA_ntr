@@ -1,60 +1,44 @@
 
-# Libraries and data ------------------------------------------------------
+# Load required libraries -------------------------------------------------
 
 library(tidyverse)
 
+
+# Read in PA14 gene info --------------------------------------------------
 
 pa14_features <- read_tsv("../PA14_genome_info/pa14_operon_table.tsv") %>%
   select(Synonym, OperonID, Start, End, Strand) %>%
   rename(gene = "Synonym")
 
 
+# Read in both DE gene lists ----------------------------------------------
+
+de_genes <- list(
+  lauren =  read_csv("../DE_genes/lauren_pa14_edgeVScentre.csv"),
+  shannon = read_csv("../DE_genes/shannon_swarmVSswim_20190109.csv")
+) %>% map(~select(., gene, log2FoldChange))
 
 
-# Joining DE genes with features, operons, TSS ----------------------------
+# Join DE genes and PA14 features -----------------------------------------
 
-de_genes_1 <- de_genes %>%
-  left_join(., pa14_features, by = c("gene" = "locus_tag"))
+de_genes_info <- de_genes %>%
+  map(~left_join(., pa14_features, by = "gene"))
 
-de_genes_2 <- de_genes_1 %>%
-  arrange(OperonID, start, position)
+de_genes_sorted <- de_genes_info %>%
+  map(~arrange(., OperonID, Start))
 
-de_genes_3 <- de_genes_2[!duplicated(de_genes_2$OperonID), ]
-
-de_genes_4 <- de_genes_3 %>% drop_na(start)
-
-
-#' Adds start coordinate to "position" column from TSS info, if that cell is NA
-#' This way "start" information is contained in a single column for all genes,
-#' including those without specific TSS information
-
-for (i in 1:nrow(de_genes_4)) {
-  if (is.na(de_genes_4[i, "position"])) {
-    de_genes_4[i, "position"] = de_genes_4[i, "start"]
-  }
-}
+de_genes_first <- de_genes_sorted %>%
+  map(~distinct(., OperonID, .keep_all = T) %>% drop_na(Start))
 
 
-# Changing strand based on TSS type ---------------------------------------
+# Add promoter location ---------------------------------------------------
 
-de_genes_5 <- de_genes_4
-de_genes_5$strand_TSS <- de_genes_5$strand
-
-for (i in 1:nrow(de_genes_5)) {
-  if (de_genes_5$TSS[i] %in% c("antisense", "primary antisense")) {
-    if (de_genes_5$strand[i] == "+") {
-      de_genes_5$strand_TSS[i] <- "-"
-    } else if (de_genes_5$strand[i] == "-") {
-      de_genes_5$strand_TSS[i] <- "+"
-    }
-  }
-}
+de_genes_master <- de_genes_first %>%
+  map(~mutate(., Promoter = Start - 250) %>%
+        select(gene, OperonID, Promoter, Start, End, Strand, log2FoldChange))
 
 
-# Selecting columns of interest, saving the result ------------------------
+# Save the results --------------------------------------------------------
 
-de_genes_master <- de_genes_5 %>%
-  mutate(promoter = position - 250) %>%
-  select(gene, promoter, position, start, end, length, strand, strand_TSS, TSS, OperonID, Product, FC)
-
-write_csv(de_genes_master, path = "../DE_genes_master_list_20181001.csv")
+map2(de_genes_master, names(de_genes_master), function(x, y)
+  write_csv(x, path = paste0("../DE_genes/masterList_", y, "_20190125.csv")))
