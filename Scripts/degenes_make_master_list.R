@@ -3,18 +3,13 @@
 
 library(tidyverse)
 
-pao1_features <- read_tsv("PAO1_genome/GCF_000006765.1_ASM676v1_feature_table.txt") %>%
-  filter(feature == "gene") %>%
-  rename(., length = feature_interval_length) %>%
-  select(locus_tag, start, end, strand, length)
 
-pao1_operons <- read_tsv("PAO1_genome/pao1_operons_20180703.opr") %>%
+pa14_features <- read_csv("../PA14_genome_info/Pseudomonas_aeruginosa_UCBPP-PA14_109.gtf")
+
+pao1_operons <- read_tsv("../PAO1_genome_info/pao1_operons_20180703.opr") %>%
   select(Synonym, OperonID, Product)
 
-pao1_tss <- read_csv("PAO1_genome/allTSS_forlab.csv") %>%
-  select(locus_tag, TSS, position, distance)
-
-de_genes <- read_csv("Original_lists/DE_relAspoTvsPAO1_planktonic_original.csv") %>%
+de_genes <- read_csv("../DE_genes/") %>%
   select(gene, FC)
 
 
