@@ -27,7 +27,7 @@ master_lists <- list(
 # Set up GRanges objects --------------------------------------------------
 
 my_granges <- master_lists %>%
-  map(~ GRanges(
+  map(~GRanges(
     .,
     seqnames = Rle(.$name),
     ranges = IRanges(start = .$Promoter, end = .$Start),
