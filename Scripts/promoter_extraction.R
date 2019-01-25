@@ -56,4 +56,3 @@ map2(my_promoters, names(my_promoters), function(a, b)
     names = a$gene,
     file.out = paste0("promoterSeqs_", b, "_20190125.fasta")
   ))
-
