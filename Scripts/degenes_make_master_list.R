@@ -4,21 +4,17 @@
 library(tidyverse)
 
 
-pa14_features <- read_csv("../PA14_genome_info/Pseudomonas_aeruginosa_UCBPP-PA14_109.gtf")
+pa14_features <- read_tsv("../PA14_genome_info/pa14_operon_table.tsv") %>%
+  select(Synonym, OperonID, Start, End, Strand) %>%
+  rename(gene = "Synonym")
 
-pao1_operons <- read_tsv("../PAO1_genome_info/pao1_operons_20180703.opr") %>%
-  select(Synonym, OperonID, Product)
 
-de_genes <- read_csv("../DE_genes/") %>%
-  select(gene, FC)
 
 
 # Joining DE genes with features, operons, TSS ----------------------------
 
 de_genes_1 <- de_genes %>%
-  left_join(., pao1_features, by = c("gene" = "locus_tag")) %>%
-  left_join(., pao1_operons, by = c("gene" = "Synonym")) %>%
-  left_join(., pao1_tss, by = c("gene" = "locus_tag"))
+  left_join(., pa14_features, by = c("gene" = "locus_tag"))
 
 de_genes_2 <- de_genes_1 %>%
   arrange(OperonID, start, position)
