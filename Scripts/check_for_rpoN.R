@@ -3,6 +3,7 @@
 # Load libraries ----------------------------------------------------------
 
 library(tidyverse)
+library(tRavis)
 
 
 # Read in DE genes --------------------------------------------------------
@@ -27,5 +28,5 @@ de_rpon_genes <- de_genes %>%
 
 # Save the DE rpoN genes --------------------------------------------------
 
-map2(de_rpon_genes, names(de_rpon_genes), function(x, y)
-  write_csv(x, path = paste0("../DE_genes/", y, "_pao1__de_rpoN_20190207.csv")))
+# map2(de_rpon_genes, names(de_rpon_genes), function(x, y)
+#   write_csv(x, path = paste0("../DE_genes/", y, "_pao1__de_rpoN_20190207.csv")))
