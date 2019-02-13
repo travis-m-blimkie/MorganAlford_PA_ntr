@@ -3,7 +3,6 @@
 # Load libraries ----------------------------------------------------------
 
 library(tidyverse)
-library(tRavis)
 
 
 # Read in DE genes --------------------------------------------------------
@@ -19,14 +18,21 @@ de_genes <- list(
 rpon_genes <- read.delim("../rpon_genes.tsv", stringsAsFactors = F, sep = "\t") %>%
   pull(locus_tag)
 
+rpon_genes_fromDaniel <- read.csv("../Regulator_info/rpon_genes_fromDaniel.csv", stringsAsFactors = F) %>%
+  pull(Locus_Tag)
 
 # Check if rpoN genes are DE ----------------------------------------------
 
 de_rpon_genes <- de_genes %>%
   map(~filter(., locus_tag %in% rpon_genes))
 
+de_rpon_genes_fromDaniel <- de_genes %>%
+  map(~filter(., locus_tag %in% rpon_genes_fromDaniel))
 
 # Save the DE rpoN genes --------------------------------------------------
 
 # map2(de_rpon_genes, names(de_rpon_genes), function(x, y)
 #   write_csv(x, path = paste0("../DE_genes/", y, "_pao1__de_rpoN_20190207.csv")))
+
+map2(de_rpon_genes_fromDaniel, names(de_rpon_genes_fromDaniel), function(x, y)
+  write_csv(x, path = paste0("../DE_genes/", y, "_pao1_DErpoN_fromDaniel_20190213.csv")))
